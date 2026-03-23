@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 공학개론 5조 소개</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, -10px); }
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.4; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+        @keyframes pop-in {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-float { animation: float 10s ease-in-out infinite; }
+        .animate-twinkle { animation: twinkle infinite ease-in-out; }
+        .animate-pop-in { animation: pop-in 0.4s ease-out forwards; }
+        
+        body { cursor: default; }
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 2px solid #fbbf24;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 1);
+            transition: transform 0.075s ease-out;
+        }
+        
+        /* 스크롤바 숨기기 */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-[#4b8df8] text-[#1f1f1f] font-sans h-screen overflow-hidden select-none relative">
+    
+    <!-- 커스텀 커서 -->
+    <div id="cursor" class="custom-cursor hidden md:block"></div>
+
+    <!-- 배경 요소 -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-[10%] left-[-5%] w-60 h-32 bg-white rounded-full blur-3xl opacity-50 animate-float"></div>
+        <div class="absolute top-[50%] left-[80%] w-72 h-40 bg-white rounded-full blur-3xl opacity-40 animate-float" style="animation-direction: reverse;"></div>
+        <div id="star-container"></div>
+    </div>
+
+    <div class="flex h-screen relative z-10">
+        <!-- 사이드바 -->
+        <aside class="hidden md:flex flex-col w-52 p-4">
+            <button onclick="resetView()" class="flex items-center gap-2 bg-pink-500 rounded-xl px-4 py-3 mb-6 hover:bg-pink-400 transition-all shadow-[0_4px_0_rgb(190,24,93)] active:translate-y-1 active:shadow-none group border-2 border-white">
+                <i data-lucide="plus" class="text-white group-hover:rotate-90 transition-transform w-4 h-4"></i>
+                <span class="text-sm font-black text-white tracking-tight" id="lang-newchat">새 채팅</span>
+            </button>
+            
+            <div class="flex-1 space-y-2">
+                <p class="text-[10px] font-black text-white px-2 py-1 uppercase tracking-widest drop-shadow-md" id="lang-recent">최근 대화</p>
+                <button onclick="resetView()" class="w-full flex items-center gap-2 p-3 rounded-xl bg-white border-2 border-blue-600 shadow-[0_4px_0_rgb(37,99,235)] hover:bg-blue-50 transition-colors text-left">
+                    <i data-lucide="message-square" class="text-blue-600 w-4 h-4"></i>
+                    <span class="text-[10px] truncate font-black text-blue-900" id="lang-title-side">AI 공학개론 5조</span>
+                </button>
+            </div>
+
+            <div class="space-y-1 pt-3 border-t-2 border-white/20 mt-3">
+                <button onclick="toggleHelp()" class="flex items-center gap-2 w-full p-2 text-xs font-black text-white hover:scale-105 transition-transform">
+                    <i data-lucide="help-circle" class="w-4 h-4"></i> <span id="lang-help">도움말</span>
+                </button>
+                <button onclick="toggleSettings()" class="flex items-center gap-2 w-full p-2 text-xs font-black text-white hover:scale-105 transition-transform">
+                    <i data-lucide="settings" class="w-4 h-4"></i> <span id="lang-settings">설정</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="flex-1 flex flex-col bg-white md:m-4 md:rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.2)] overflow-hidden border-4 border-white">
+            <header class="flex items-center justify-between px-8 py-4 border-b-4 border-blue-50">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="resetView()">
+                    <div class="w-9 h-9 bg-gradient-to-br from-pink-500 via-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg group-hover:rotate-12 transition-transform border-2 border-white">5</div>
+                    <span class="text-lg font-black tracking-tighter text-gray-800" id="lang-title-head">AI 공학개론 5조</span>
+                </div>
+                <div class="w-9 h-9 rounded-full bg-pink-500 flex items-center justify-center text-[10px] text-white font-black shadow-lg border-2 border-white ring-4 ring-pink-50">U</div>
+            </header>
+
+            <div id="content-area" class="flex-1 overflow-y-auto px-4 md:px-10 bg-[#f8fbff] hide-scrollbar">
+                <!-- 홈 화면 (카드들) -->
+                <div id="home-view" class="h-full flex flex-col justify-center max-w-2xl mx-auto space-y-4 py-4 animate-pop-in">
+                    <button onclick="askQuestion('team')" class="p-4 rounded-[1.8rem] border-4 border-blue-500 bg-white transition-all hover:scale-[1.02] active:scale-95 text-left group shadow-[0_6px_0_rgb(37,99,235)] flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-inner">
+                                <i data-lucide="users" class="text-white w-5 h-5"></i>
+                            </div>
+                            <p class="font-black text-lg text-blue-900" id="q-team">우리 조 전체 소개</p>
+                        </div>
+                        <i data-lucide="sparkles" class="text-yellow-400 fill-yellow-400 group-hover:rotate-45 transition-transform w-5 h-5"></i>
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-3" id="member-grid">
+                        <!-- 멤버 카드들이 자바스크립트로 생성됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 채팅 화면 -->
+                <div id="chat-view" class="hidden max-w-2xl mx-auto py-6 space-y-8">
+                    <div id="message-list" class="space-y-8"></div>
+                    <div id="typing-indicator" class="hidden flex gap-4">
+                        <div class="w-9 h-9 rounded-xl bg-pink-500 flex items-center justify-center animate-bounce border-2 border-white shadow-lg">
+                            <i data-lucide="sparkles" class="text-white w-4 h-4"></i>
+                        </div>
+                        <div class="bg-white border-4 border-pink-100 px-5 py-3 rounded-[1.5rem] w-32 h-10 shadow-xl animate-pulse"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-8 pb-6 bg-white">
+                <div class="max-w-2xl mx-auto mt-4 relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-pink-500 via-blue-500 to-indigo-600 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
+                    <div class="relative flex items-center bg-[#f0f4f8] rounded-[1.8rem] px-6 py-3 border-4 border-white shadow-2xl">
+                        <input type="text" id="main-input" placeholder="궁금한 항목을 선택해주세요" class="bg-transparent flex-1 outline-none text-[11px] font-black text-gray-800 placeholder:text-gray-400" readonly>
+                        <div class="w-9 h-9 bg-pink-600 rounded-xl flex items-center justify-center text-white shadow-lg border-2 border-white rotate-3 hover:rotate-0 transition-transform">
+                            <i data-lucide="mouse-pointer-2" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center text-[9px] text-blue-900 mt-4 font-black uppercase tracking-[0.3em] drop-shadow-sm opacity-60">★ Powerpuff Team 5 ★</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- 모달: 설정 -->
+    <div id="settings-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-blue-900/40 backdrop-blur-lg p-4" onclick="toggleSettings()">
+        <div class="bg-white rounded-[3rem] p-10 max-w-sm w-full shadow-2xl border-8 border-white animate-pop-in" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-black text-gray-800 tracking-tight" id="modal-settings-title">설정</h3>
+                <button onclick="toggleSettings()" class="p-2 bg-gray-100 hover:bg-pink-100 hover:text-pink-600 rounded-2xl transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-6">
+                <p class="text-xs font-black text-gray-400 px-1 uppercase tracking-widest" id="lang-select-text">언어 설정</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="setLang('ko')" id="btn-ko" class="flex items-center justify-center py-4 rounded-2xl font-black text-sm border-4 transition-all">KOR</button>
+                    <button onclick="setLang('en')" id="btn-en" class="flex items-center justify-center py-4 rounded-2xl font-black text-sm border-4 transition-all">ENG</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달: 도움말 -->
+    <div id="help-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-blue-900/40 backdrop-blur-lg p-4" onclick="toggleHelp()">
+        <div class="bg-white rounded-[3rem] p-10 max-w-sm w-full shadow-2xl border-8 border-white animate-pop-in" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-black text-gray-800 tracking-tight" id="modal-help-title">도움말</h3>
+                <button onclick="toggleHelp()" class="p-2 bg-gray-100 hover:bg-pink-100 hover:text-pink-600 rounded-2xl transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-6">
+                <p class="text-sm leading-relaxed font-black text-pink-700 bg-pink-50 p-6 rounded-3xl border-2 border-pink-100" id="help-content">우리 조원들의 정보와 소개를 확인하실 수 있습니다.</p>
+                <button onclick="toggleHelp()" class="w-full py-4 bg-pink-500 text-white rounded-3xl font-black shadow-[0_6px_0_rgb(190,24,93)] text-xs uppercase tracking-widest hover:translate-y-0.5 transition-all">OK! LET'S GO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 초기 데이터 및 상태
+        let currentLang = 'ko';
+        const teamData = {
+            team: {
+                name: "Team 5",
+                questions: { ko: "우리 조 전체 소개", en: "About our team" },
+                answer: { ko: "안녕하세요! 저희는 'AI 공학개론' 5조입니다. 바이오메디컬공학부와 자율전공학부의 만남으로 구성되었습니다. \n\n\"우리가 세상을 구하진 않지만, 과제는 구한다!\" \n\n저희 팀은 서로서로 친해지며 앞으로 있을 활동도 열심히 참여하겠습니다!", en: "Hello! We are Team 5 for 'Intro to AI Engineering'. We are a mix of Biomedical Engineering and Open Major students. \n\n'We don't save the world, but we save our assignments!' \n\nWe will work hard and get along well!" },
+                image: "https://i.postimg.cc/wjn6Rs5B/Kakao-Talk-20260323-182324252.png",
+                color: "blue"
+            },
+            members: [
+                { id: 1, name: "조영웅", role: "조장", q: { ko: "조장 조영웅님은?", en: "Who is leader Young-woong?" }, a: { ko: "[리더십 설탕 MAX] 자율전공의 유연함으로 모든 과제 빌런을 물리치는 팀의 든든한 리더, 블로섬 담당입니다!", en: "[Leadership Sugar MAX] A reliable leader who defeats assignment villains with flexibility!" }, img: "https://i.postimg.cc/hzDL4ysX/Kakao-Talk-20260323-180255097-02.png", color: "pink" },
+                { id: 2, name: "박선주", role: "조원", q: { ko: "조원 박선주님은?", en: "Who is Sun-ju?" }, a: { ko: "[친화력 스파이스 MAX] 바이오 전공 지식에 긍정 에너지를 섞어 팀의 사기를 높이는 러블리 버블 담당입니다!", en: "[Affability Spice MAX] Boosting team morale with positive energy and bio-knowledge!" }, img: "https://i.postimg.cc/gXzVcSsv/Kakao-Talk-20260323-180255097-03.png", color: "blue" },
+                { id: 4, name: "신가연", role: "조원", q: { ko: "조원 신가연님은?", en: "Who is Ga-yeon?" }, a: { ko: "[집중력 케미컬 X MAX] 맡은 임무는 절대 놓치지 않는 정밀 타격 능력, 팀의 화력을 책임지는 버터컵 담당입니다!", en: "[Concentration Chemical X MAX] Responsible for team firepower with precision strike skills!" }, img: "https://i.postimg.cc/k6JQM1sK/Kakao-Talk-20260323-180255097.png", color: "green" },
+                { id: 3, name: "박효빈", role: "조원", q: { ko: "조원 박효빈님은?", en: "Who is Hyo-bin?" }, a: { ko: "[통찰력 마법 가루 MAX] 복잡한 자료 속에서 정답만 쏙쏙 뽑아내는 천재적인 브레인, 팀의 비밀 병기입니다!", en: "[Insight Magic Powder MAX] A genius brain who picks out the right answers from complex data!" }, img: "https://i.postimg.cc/YGr62nRN/Kakao-Talk-20260323-180255097-01.png", color: "purple" }
+            ]
+        };
+
+        const translations = {
+            ko: { newChat: "새 채팅", recent: "최근 대화", help: "도움말", settings: "설정", title: "AI 공학개론 5조", placeholder: "궁금한 항목을 선택해주세요", settingsTitle: "설정", helpTitle: "도움말", langText: "언어 설정", helpBody: "우리 조원들의 정보와 소개를 확인하실 수 있습니다." },
+            en: { newChat: "New Chat", recent: "Recent", help: "Help", settings: "Settings", title: "AI Team 5", placeholder: "Select an item to chat", settingsTitle: "Settings", helpTitle: "Help", langText: "Language", helpBody: "You can check our team information and roles." }
+        };
+
+        // 초기화 실행
+        window.onload = () => {
+            lucide.createIcons();
+            createStars();
+            renderMemberCards();
+            setLang('ko');
+            
+            // 마우스 움직임 감지
+            document.addEventListener('mousemove', (e) => {
+                const cursor = document.getElementById('cursor');
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+        };
+
+        function createStars() {
+            const container = document.getElementById('star-container');
+            for(let i=0; i<25; i++) {
+                const star = document.createElement('div');
+                star.className = 'absolute animate-twinkle';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.left = Math.random() * 100 + '%';
+                const size = Math.random() * 5 + 6;
+                star.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#fde047" stroke="#fde047" style="filter: drop-shadow(0 0 8px rgba(255, 230, 0, 0.9))"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>`;
+                star.style.animationDelay = Math.random() * 5 + 's';
+                star.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                container.appendChild(star);
+            }
+        }
+
+        function renderMemberCards() {
+            const grid = document.getElementById('member-grid');
+            grid.innerHTML = teamData.members.map(m => `
+                <button onclick="askQuestion(${m.id})" class="p-4 rounded-[1.8rem] border-4 transition-all hover:scale-[1.03] active:scale-95 text-left group flex flex-col justify-between h-32 bg-white ${getNeonStyles(m.color)}" style="box-shadow: 0 6px 0 ${getShadowColor(m.color)}">
+                    <p class="font-black text-sm leading-tight ${getIconColor(m.color)}">${m.q[currentLang]}</p>
+                    <div class="flex items-center gap-2 mt-1 bg-gray-50/80 p-1.5 rounded-2xl border-2 border-gray-100">
+                         <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-md border-2 border-current ${getIconColor(m.color)}">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                         </div>
+                         <div class="flex flex-col">
+                            <span class="text-[13px] font-black leading-none ${getIconColor(m.color)}">${m.name}</span>
+                            <span class="text-[9px] font-bold uppercase tracking-widest opacity-70 ${getIconColor(m.color)}">${m.role}</span>
+                         </div>
+                    </div>
+                </button>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function getNeonStyles(color) {
+            const styles = { pink: "border-pink-600 hover:bg-pink-50", blue: "border-blue-600 hover:bg-blue-50", purple: "border-purple-600 hover:bg-purple-50", green: "border-green-600 hover:bg-green-50" };
+            return styles[color] || "";
+        }
+        function getShadowColor(color) {
+            const shadows = { pink: "#db2777", blue: "#2563eb", green: "#16a34a", purple: "#9333ea" };
+            return shadows[color] || "#000";
+        }
+        function getIconColor(color) {
+            const colors = { pink: "text-pink-600", blue: "text-blue-600", purple: "text-purple-600", green: "text-green-600" };
+            return colors[color] || "text-gray-500";
+        }
+        function getGlowEffect(color) {
+            const glows = { pink: "bg-pink-500 shadow-[0_0_60px_30px_rgba(219,39,119,0.6)]", blue: "bg-blue-500 shadow-[0_0_60px_30px_rgba(37,99,235,0.6)]", purple: "bg-purple-500 shadow-[0_0_60px_30px_rgba(147,51,234,0.6)]", green: "bg-green-500 shadow-[0_0_60px_30px_rgba(22,163,74,0.6)]" };
+            return glows[color] || "bg-white";
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            document.getElementById('lang-newchat').innerText = t.newChat;
+            document.getElementById('lang-recent').innerText = t.recent;
+            document.getElementById('lang-help').innerText = t.help;
+            document.getElementById('lang-settings').innerText = t.settings;
+            document.getElementById('lang-title-side').innerText = t.title;
+            document.getElementById('lang-title-head').innerText = t.title;
+            document.getElementById('main-input').placeholder = t.placeholder;
+            document.getElementById('modal-settings-title').innerText = t.settingsTitle;
+            document.getElementById('modal-help-title').innerText = t.helpTitle;
+            document.getElementById('lang-select-text').innerText = t.langText;
+            document.getElementById('help-content').innerText = t.helpBody;
+            document.getElementById('q-team').innerText = teamData.team.questions[lang];
+            
+            // 버튼 스타일 업데이트
+            document.getElementById('btn-ko').className = `flex items-center justify-center py-4 rounded-2xl font-black text-sm border-4 transition-all ${lang === 'ko' ? 'bg-pink-500 text-white border-pink-200 shadow-lg' : 'bg-gray-50 text-gray-400 border-transparent'}`;
+            document.getElementById('btn-en').className = `flex items-center justify-center py-4 rounded-2xl font-black text-sm border-4 transition-all ${lang === 'en' ? 'bg-blue-500 text-white border-blue-200 shadow-lg' : 'bg-gray-50 text-gray-400 border-transparent'}`;
+            
+            renderMemberCards();
+        }
+
+        function askQuestion(id) {
+            const data = id === 'team' ? teamData.team : teamData.members.find(m => m.id === id);
+            const question = id === 'team' ? data.questions[currentLang] : data.q[currentLang];
+            const answer = id === 'team' ? data.answer[currentLang] : data.a[currentLang];
+            
+            document.getElementById('home-view').classList.add('hidden');
+            document.getElementById('chat-view').classList.remove('hidden');
+            
+            const list = document.getElementById('message-list');
+            
+            // 사용자 메시지 추가
+            list.innerHTML += `
+                <div class="flex gap-4 flex-row-reverse animate-pop-in">
+                    <div class="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-black text-[10px] border-2 border-white bg-blue-600 text-white shadow-lg">U</div>
+                    <div class="flex flex-col gap-1.5 items-end flex-1">
+                        <div class="bg-blue-600 text-white shadow-[0_4px_0_rgb(29,78,216)] px-4 py-3 rounded-[1.5rem]">
+                            <p class="text-sm leading-relaxed font-black">${question}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 타이핑 시작
+            const indicator = document.getElementById('typing-indicator');
+            indicator.classList.remove('hidden');
+            
+            setTimeout(() => {
+                indicator.classList.add('hidden');
+                list.innerHTML += `
+                    <div class="flex gap-4 flex-row animate-pop-in">
+                        <div class="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-black text-[10px] border-2 border-white bg-gradient-to-br from-pink-500 to-pink-700 text-white shadow-lg">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                        <div class="flex flex-col gap-1.5 items-start flex-1">
+                            <span class="text-[10px] font-black text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full border border-pink-100 uppercase tracking-tighter">${id === 'team' ? 'TEAM 5' : data.name}</span>
+                            <div class="bg-white border-4 border-pink-100 text-gray-800 shadow-xl px-4 py-3 rounded-[1.5rem]">
+                                <p class="text-sm leading-relaxed whitespace-pre-wrap font-black">${answer}</p>
+                            </div>
+                            <div class="mt-4 w-full flex justify-start relative px-4">
+                                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-4/5 blur-[40px] opacity-70 rounded-full animate-pulse ${getGlowEffect(data.color)}"></div>
+                                <div class="relative z-10 ${id === 'team' ? 'max-w-xs' : 'max-w-[150px]'} w-full overflow-hidden rounded-[2rem] border-8 border-white shadow-2xl transition-transform hover:scale-105 duration-500">
+                                    <img src="${data.image || data.img}" class="w-full h-auto object-contain">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+                document.getElementById('content-area').scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
+            }, 1000);
+        }
+
+        function resetView() {
+            document.getElementById('message-list').innerHTML = '';
+            document.getElementById('chat-view').classList.add('hidden');
+            document.getElementById('home-view').classList.remove('hidden');
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function toggleHelp() {
+            const modal = document.getElementById('help-modal');
+            modal.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
